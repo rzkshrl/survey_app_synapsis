@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
@@ -8,6 +10,7 @@ import 'package:survey_app_synapsis/app/data/constants/api_const.dart';
 import 'package:survey_app_synapsis/app/data/model/survey_model.dart';
 import 'package:survey_app_synapsis/app/routes/app_pages.dart';
 
+import '../data/model/survey_detailed_model.dart';
 import '../data/model/user_model.dart';
 import '../modules/login/controllers/login_controller.dart';
 
@@ -18,7 +21,20 @@ class APIController extends GetxController {
   final loginC = Get.put(LoginController());
 
   var surveyListAllData = <SurveyModel>[].obs;
-  var questionListAllData = <QuestionModel>[].obs;
+  var questionDetailedListAllData = <QuestionDetailedModel>[].obs;
+
+  var selectedOption = 0.obs;
+
+  var indexQuestion = 0.obs;
+
+  int incrementIndex(int index, int listLength) {
+    index++;
+    if (index >= listLength) {
+      index = 0;
+      Get.back();
+    }
+    return index;
+  }
 
   void removePreferences() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -77,7 +93,7 @@ class APIController extends GetxController {
   Future<List<SurveyModel>> getSurveyData() async {
     try {
       dio.interceptors.add(CookieManager(cookieJar));
-      String url = apiEndpointURL + getAllSurveyURL;
+      String url = apiEndpointURL + getSurveyURL;
 
       var res = await dio.get(
         url,
@@ -104,8 +120,46 @@ class APIController extends GetxController {
         Get.snackbar('Gagal', 'Terjadi kesalahan.');
       }
     }
-    // ignore: invalid_use_of_protected_member
     List<SurveyModel> surveyModelList = surveyListAllData.value;
     return surveyModelList;
+  }
+
+  Future<void> getQuestionData(String surveyId, String surveyName) async {
+    try {
+      dio.interceptors.add(CookieManager(cookieJar));
+      String url = "$apiEndpointURL$getSurveyURL/$surveyId";
+
+      var res = await dio.get(
+        url,
+        options: Options(
+          validateStatus: (_) => true,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Cookie': cookie,
+          },
+        ),
+      );
+
+      if (res.data['code'] == 200) {
+        questionDetailedListAllData.value =
+            (res.data['data']['questions'] as List)
+                .map((e) => QuestionDetailedModel.fromJson(e))
+                .toList();
+
+        Get.toNamed(Routes.SURVEY_TEST, arguments: surveyName);
+      } else {
+        Get.snackbar('Gagal', 'Terjadi kesalahan.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('$e');
+        Get.snackbar('Gagal', 'Terjadi kesalahan.');
+      }
+    }
+  }
+
+  Future<List<QuestionDetailedModel>> getQuestionListData() async {
+    return questionDetailedListAllData.value;
   }
 }

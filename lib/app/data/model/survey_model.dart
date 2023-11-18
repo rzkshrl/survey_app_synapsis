@@ -27,7 +27,7 @@ class SurveyModel {
       created_at: DateTime.parse(json['created_at']),
       updated_at: DateTime.parse(json['updated_at']),
       questions: (json['questions'] as List<dynamic>?)
-          ?.map((questionJson) => QuestionModel.fromJson(questionJson))
+          ?.map((e) => QuestionModel.fromJson(e))
           .toList(),
     );
   }
@@ -40,7 +40,7 @@ class SurveyModel {
       "total_respondent": total_respondent,
       "created_at": created_at,
       "updated_at": updated_at,
-      "question": questions?.map((e) => e.toJson()).toList(),
+      "questions": questions?.map((e) => e.toJson()).toList(),
     };
   }
 }

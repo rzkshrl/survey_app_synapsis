@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:sizer/sizer.dart';
-import 'package:survey_app_synapsis/app/routes/app_pages.dart';
 import 'package:survey_app_synapsis/app/utils/loading.dart';
 
 import '../../../controller/api_controller.dart';
@@ -73,8 +72,8 @@ class HomeView extends GetView<HomeController> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(5),
                             onTap: () {
-                              Get.toNamed(Routes.SURVEY_TEST,
-                                  arguments: survey);
+                              apiC.getQuestionData(
+                                  survey.id!, survey.survey_name!);
                             },
                             child: SizedBox(
                               height: 10.h,

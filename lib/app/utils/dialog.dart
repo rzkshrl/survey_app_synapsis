@@ -1,9 +1,14 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 import 'package:survey_app_synapsis/app/theme/theme.dart';
 
+import '../controller/api_controller.dart';
+
 Widget buildQuestionNumberingPopup() {
+  final apiC = Get.put(APIController());
   return Dialog(
     backgroundColor: Theme.of(Get.context!).popupMenuTheme.color,
     surfaceTintColor: Theme.of(Get.context!).popupMenuTheme.color,
@@ -36,7 +41,7 @@ Widget buildQuestionNumberingPopup() {
           const Divider(),
           GridView.builder(
             shrinkWrap: true,
-            itemCount: 20,
+            itemCount: apiC.questionDetailedListAllData.value.length,
             padding: EdgeInsets.only(
                 left: 6.w, top: 0.8.h, bottom: 0.8.h, right: 6.w),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

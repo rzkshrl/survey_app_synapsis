@@ -1,18 +1,24 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
-import 'package:survey_app_synapsis/app/data/model/survey_model.dart';
 
+import '../../../controller/api_controller.dart';
+import '../../../data/model/survey_detailed_model.dart';
 import '../../../theme/theme.dart';
 import '../../../utils/dialog.dart';
+import '../../../utils/loading.dart';
 import '../controllers/survey_test_controller.dart';
 
 class SurveyTestView extends GetView<SurveyTestController> {
   const SurveyTestView({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    var survey = Get.arguments as SurveyModel;
+    final apiC = Get.put(APIController());
+    var surveyName = Get.arguments;
+    debugPrint(surveyName);
 
     return Scaffold(
       appBar: AppBar(
@@ -102,6 +108,7 @@ class SurveyTestView extends GetView<SurveyTestController> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(5),
                 onTap: () {
+                  apiC.indexQuestion.value = 0;
                   Get.back();
                 },
                 child: SizedBox(
@@ -127,17 +134,33 @@ class SurveyTestView extends GetView<SurveyTestController> {
               borderRadius: BorderRadius.circular(5),
               child: InkWell(
                 borderRadius: BorderRadius.circular(5),
-                onTap: () {},
+                onTap: () {
+                  apiC.indexQuestion.value = apiC.incrementIndex(
+                      apiC.indexQuestion.value,
+                      apiC.questionDetailedListAllData.value.length);
+
+                  debugPrint(
+                      "question_number ke berapa : ${apiC.questionDetailedListAllData.value[apiC.indexQuestion.value].question_number}");
+                },
                 child: SizedBox(
                   height: 5.5.h,
                   width: 50.w,
                   child: Center(
-                    child: Text(
-                      'Next',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineLarge!
-                          .copyWith(fontSize: 14.sp, color: light),
+                    child: Obx(
+                      () => Text(
+                        apiC
+                                    .questionDetailedListAllData
+                                    .value[apiC.indexQuestion.value]
+                                    .question_number! ==
+                                apiC.questionDetailedListAllData.value.last
+                                    .question_number!
+                            ? 'Finish'
+                            : 'Next',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge!
+                            .copyWith(fontSize: 14.sp, color: light),
+                      ),
                     ),
                   ),
                 ),
@@ -146,58 +169,133 @@ class SurveyTestView extends GetView<SurveyTestController> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding:
-                  EdgeInsets.only(left: 7.w, right: 7.w, top: 2.h, bottom: 2.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    survey.survey_name!,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineLarge!
-                        .copyWith(fontSize: 15.sp),
-                  ),
-                  SizedBox(
-                    height: 2.h,
-                  ),
-                  Text(
-                    'Apa nama gugusan kepulauan di timur Indonesia yang terkenal dengan keindahan bawah lautnya?',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall!
-                        .copyWith(fontSize: 15.sp, color: grey),
-                  ),
-                ],
+      body: FutureBuilder<List<QuestionDetailedModel>>(
+          future: apiC.getQuestionListData(),
+          builder: (context, snap) {
+            if (!snap.hasData) {
+              return const LoadingView();
+            }
+            final questionDataList = snap.data!;
+            return Obx(
+              () => SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: 7.w, right: 7.w, top: 2.h, bottom: 2.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            surveyName,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineLarge!
+                                .copyWith(fontSize: 15.sp),
+                          ),
+                          SizedBox(
+                            height: 2.h,
+                          ),
+                          Text(
+                            questionDataList[apiC.indexQuestion.value]
+                                .question_name!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall!
+                                .copyWith(fontSize: 15.sp, color: grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 02.h,
+                      width: double.maxFinite,
+                      decoration: BoxDecoration(color: grey6),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: 7.w, right: 7.w, top: 4.h, bottom: 1.h),
+                      child: Text(
+                        'Answer',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall!
+                            .copyWith(fontSize: 15.sp),
+                      ),
+                    ),
+                    Divider(
+                      color: grey5,
+                    ),
+                    StatefulBuilder(builder: (context, setState) {
+                      return ListView.builder(
+                          itemCount: questionDataList[apiC.indexQuestion.value]
+                                      .options ==
+                                  null
+                              ? 0
+                              : questionDataList[apiC.indexQuestion.value]
+                                  .options!
+                                  .length,
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.only(bottom: 0),
+                          itemBuilder: (context, index) {
+                            var optionItem =
+                                questionDataList[apiC.indexQuestion.value]
+                                    .options![index];
+
+                            Widget title() {
+                              if (questionDataList[apiC.indexQuestion.value]
+                                      .options ==
+                                  null) {
+                                return Text(
+                                  '',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall!
+                                      .copyWith(fontSize: 15.sp),
+                                );
+                              } else {
+                                return Text(
+                                  optionItem.option_name.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall!
+                                      .copyWith(fontSize: 15.sp),
+                                );
+                              }
+                            }
+
+                            int? value() {
+                              if (questionDataList[apiC.indexQuestion.value]
+                                      .options ==
+                                  null) {
+                                return 0;
+                              } else {
+                                return optionItem.value!.toInt();
+                              }
+                            }
+
+                            return RadioListTile(
+                              title: title(),
+                              value: value(),
+                              groupValue: apiC.selectedOption.value,
+                              onChanged: (value) {
+                                setState(() {
+                                  apiC.selectedOption.value = value!;
+                                  // for (var item
+                                  //     in apiC.selectedValuesOption().value) {
+                                  //   debugPrint('$item');
+                                  // }
+                                });
+                              },
+                            );
+                          });
+                    }),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              height: 02.h,
-              width: double.maxFinite,
-              decoration: BoxDecoration(color: grey6),
-            ),
-            Padding(
-              padding:
-                  EdgeInsets.only(left: 7.w, right: 7.w, top: 4.h, bottom: 1.h),
-              child: Text(
-                'Answer',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall!
-                    .copyWith(fontSize: 15.sp),
-              ),
-            ),
-            Divider(
-              color: grey5,
-            ),
-          ],
-        ),
-      ),
+            );
+          }),
     );
   }
 }

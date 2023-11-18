@@ -38,6 +38,14 @@ class SurveyAppTheme {
       textStyle:
           TextStyle(color: dark, fontSize: 10.sp, fontWeight: FontWeight.w400),
     ),
+    radioTheme: RadioThemeData(
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return blue;
+        }
+        return grey5;
+      }),
+    ),
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
         if (states.contains(MaterialState.selected)) {
