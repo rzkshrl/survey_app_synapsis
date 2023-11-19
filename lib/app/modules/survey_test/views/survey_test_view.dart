@@ -115,6 +115,7 @@ class SurveyTestView extends GetView<SurveyTestController> {
                   apiC.visibleRequired.value = false;
                   apiC.selectedOptions.clear();
                   apiC.selectedOptionNames.clear();
+                  apiC.selectedOptionQuestionIDs.clear();
                   Get.back();
                 },
                 child: SizedBox(
@@ -292,11 +293,12 @@ class SurveyTestView extends GetView<SurveyTestController> {
                                   apiC.selectedOptionName.value =
                                       optionItem.option_name!;
                                   apiC.selectedOptionQuestionID.value =
-                                      optionItem.question_id!;
+                                      questionDataList[apiC.indexQuestion.value]
+                                          .id!;
                                   debugPrint(
-                                      'selectedOptionName : ${optionItem.option_name!}');
+                                      'selectedOptionName : ${apiC.selectedOptionName.value}');
                                   debugPrint(
-                                      'selectedOptionQuestionID : ${optionItem.question_id!}');
+                                      'selectedOptionQuestionID : ${apiC.selectedOptionQuestionID.value}');
                                   apiC.selectedOption.value = value()!;
                                 });
                               },
@@ -328,11 +330,13 @@ class SurveyTestView extends GetView<SurveyTestController> {
                                       apiC.selectedOptionName.value =
                                           optionItem.option_name!;
                                       apiC.selectedOptionQuestionID.value =
-                                          optionItem.question_id!;
+                                          questionDataList[
+                                                  apiC.indexQuestion.value]
+                                              .id!;
                                       debugPrint(
-                                          'selectedOptionName : ${optionItem.option_name!}');
+                                          'selectedOptionName : ${apiC.selectedOptionName.value}');
                                       debugPrint(
-                                          'selectedOptionQuestionID : ${optionItem.question_id!}');
+                                          'selectedOptionQuestionID : ${apiC.selectedOptionQuestionID.value}');
                                       apiC.selectedOption.value = value!;
                                     });
                                   },

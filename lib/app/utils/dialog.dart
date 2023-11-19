@@ -144,6 +144,15 @@ Widget buildGridView(List<QuestionDetailedModel> pageItemData) {
               onTap: () {
                 apiC.questionDetailedListAllData.value[
                     apiC.indexQuestion.value = item.question_number! - 1];
+                if (apiC.selectedOptions.contains(apiC.selectedOption.value) &&
+                    apiC.selectedOptionNames
+                        .contains(apiC.selectedOptionName.value) &&
+                    apiC.selectedOptionQuestionIDs
+                        .contains(apiC.selectedOptionQuestionID.value)) {
+                  apiC.selectedOptions.clear();
+                  apiC.selectedOptionNames.clear();
+                  apiC.selectedOptionQuestionIDs.clear();
+                }
                 Get.back();
               },
               child: SizedBox(
