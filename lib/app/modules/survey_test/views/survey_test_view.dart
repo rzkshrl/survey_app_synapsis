@@ -153,12 +153,12 @@ class SurveyTestView extends GetView<SurveyTestController> {
                         'selectedOptionName : ${apiC.selectedOptionQuestionID.value}');
                     debugPrint(
                         'selectedOptionQuestionID : ${apiC.selectedOptionName.value}');
-                    if (apiC.questionDetailedListAllData
-                            .value[apiC.indexQuestion.value].question_number! ==
-                        apiC.questionDetailedListAllData.value[5]
-                            .question_number!) {
-                      apiC.collectData();
-                    }
+                    // if (apiC.questionDetailedListAllData
+                    //         .value[apiC.indexQuestion.value].question_number! ==
+                    //     apiC.questionDetailedListAllData.value[5]
+                    //         .question_number!) {
+                    //   apiC.collectData();
+                    // }
                     apiC.selectedOption.value = 0;
                   } else {
                     apiC.visibleRequired.value = true;
