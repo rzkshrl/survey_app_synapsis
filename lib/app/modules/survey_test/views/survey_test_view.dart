@@ -1,6 +1,8 @@
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
@@ -109,6 +111,10 @@ class SurveyTestView extends GetView<SurveyTestController> {
                 borderRadius: BorderRadius.circular(5),
                 onTap: () {
                   apiC.indexQuestion.value = 0;
+                  apiC.selectedOption.value = 0;
+                  apiC.visibleRequired.value = false;
+                  apiC.selectedOptions.clear();
+                  apiC.selectedOptionNames.clear();
                   Get.back();
                 },
                 child: SizedBox(
@@ -135,12 +141,35 @@ class SurveyTestView extends GetView<SurveyTestController> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(5),
                 onTap: () {
-                  apiC.indexQuestion.value = apiC.incrementIndex(
-                      apiC.indexQuestion.value,
-                      apiC.questionDetailedListAllData.value.length);
-
-                  debugPrint(
-                      "question_number ke berapa : ${apiC.questionDetailedListAllData.value[apiC.indexQuestion.value].question_number}");
+                  if (apiC.selectedOption.value != 0) {
+                    apiC.indexQuestion.value = apiC.incrementIndex(
+                        apiC.indexQuestion.value,
+                        apiC.questionDetailedListAllData.value.length);
+                    apiC.selectedOptions.add(apiC.selectedOption.value);
+                    apiC.selectedOptionNames.add(apiC.selectedOptionName.value);
+                    apiC.selectedOptionQuestionIDs
+                        .add(apiC.selectedOptionQuestionID.value);
+                    debugPrint(
+                        'selectedOptionName : ${apiC.selectedOptionQuestionID.value}');
+                    debugPrint(
+                        'selectedOptionQuestionID : ${apiC.selectedOptionName.value}');
+                    if (apiC.questionDetailedListAllData
+                            .value[apiC.indexQuestion.value].question_number! ==
+                        apiC.questionDetailedListAllData.value[5]
+                            .question_number!) {
+                      apiC.collectData();
+                    }
+                    apiC.selectedOption.value = 0;
+                  } else {
+                    apiC.visibleRequired.value = true;
+                    if (apiC.questionDetailedListAllData
+                            .value[apiC.indexQuestion.value].options ==
+                        null) {
+                      apiC.indexQuestion.value = apiC.incrementIndex(
+                          apiC.indexQuestion.value,
+                          apiC.questionDetailedListAllData.value.length);
+                    }
+                  }
                 },
                 child: SizedBox(
                   height: 5.5.h,
@@ -148,14 +177,7 @@ class SurveyTestView extends GetView<SurveyTestController> {
                   child: Center(
                     child: Obx(
                       () => Text(
-                        apiC
-                                    .questionDetailedListAllData
-                                    .value[apiC.indexQuestion.value]
-                                    .question_number! ==
-                                apiC.questionDetailedListAllData.value.last
-                                    .question_number!
-                            ? 'Finish'
-                            : 'Next',
+                        apiC.buttonStateText(),
                         style: Theme.of(context)
                             .textTheme
                             .headlineLarge!
@@ -176,6 +198,7 @@ class SurveyTestView extends GetView<SurveyTestController> {
               return const LoadingView();
             }
             final questionDataList = snap.data!;
+
             return Obx(
               () => SingleChildScrollView(
                 child: Column(
@@ -198,8 +221,7 @@ class SurveyTestView extends GetView<SurveyTestController> {
                             height: 2.h,
                           ),
                           Text(
-                            questionDataList[apiC.indexQuestion.value]
-                                .question_name!,
+                            '${questionDataList[apiC.indexQuestion.value].question_number!}. ${questionDataList[apiC.indexQuestion.value].question_name!}',
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineSmall!
@@ -243,25 +265,13 @@ class SurveyTestView extends GetView<SurveyTestController> {
                                 questionDataList[apiC.indexQuestion.value]
                                     .options![index];
 
-                            Widget title() {
+                            String title() {
                               if (questionDataList[apiC.indexQuestion.value]
                                       .options ==
                                   null) {
-                                return Text(
-                                  '',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall!
-                                      .copyWith(fontSize: 15.sp),
-                                );
+                                return '';
                               } else {
-                                return Text(
-                                  optionItem.option_name.toString(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall!
-                                      .copyWith(fontSize: 15.sp),
-                                );
+                                return optionItem.option_name.toString();
                               }
                             }
 
@@ -275,19 +285,59 @@ class SurveyTestView extends GetView<SurveyTestController> {
                               }
                             }
 
-                            return RadioListTile(
-                              title: title(),
-                              value: value(),
-                              groupValue: apiC.selectedOption.value,
-                              onChanged: (value) {
+                            return GestureDetector(
+                              onLongPressDown: (details) {
                                 setState(() {
-                                  apiC.selectedOption.value = value!;
-                                  // for (var item
-                                  //     in apiC.selectedValuesOption().value) {
-                                  //   debugPrint('$item');
-                                  // }
+                                  apiC.visibleRequired.value = false;
+                                  apiC.selectedOptionName.value =
+                                      optionItem.option_name!;
+                                  apiC.selectedOptionQuestionID.value =
+                                      optionItem.question_id!;
+                                  debugPrint(
+                                      'selectedOptionName : ${optionItem.option_name!}');
+                                  debugPrint(
+                                      'selectedOptionQuestionID : ${optionItem.question_id!}');
+                                  apiC.selectedOption.value = value()!;
                                 });
                               },
+                              child: ListTile(
+                                title: Text(
+                                  title(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall!
+                                      .copyWith(fontSize: 15.sp),
+                                ),
+                                horizontalTitleGap: 0.w,
+                                trailing: Obx(
+                                  () => Visibility(
+                                    visible: apiC.visibleRequired.value,
+                                    child: Icon(
+                                      FontAwesomeIcons.asterisk,
+                                      color: errorBg,
+                                      size: 2.w,
+                                    ),
+                                  ),
+                                ),
+                                leading: Radio(
+                                  value: value(),
+                                  groupValue: apiC.selectedOption.value,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      apiC.visibleRequired.value = false;
+                                      apiC.selectedOptionName.value =
+                                          optionItem.option_name!;
+                                      apiC.selectedOptionQuestionID.value =
+                                          optionItem.question_id!;
+                                      debugPrint(
+                                          'selectedOptionName : ${optionItem.option_name!}');
+                                      debugPrint(
+                                          'selectedOptionQuestionID : ${optionItem.question_id!}');
+                                      apiC.selectedOption.value = value!;
+                                    });
+                                  },
+                                ),
+                              ),
                             );
                           });
                     }),

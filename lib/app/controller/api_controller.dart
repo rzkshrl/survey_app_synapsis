@@ -1,10 +1,16 @@
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:survey_app_synapsis/app/data/constants/api_const.dart';
 import 'package:survey_app_synapsis/app/data/model/survey_model.dart';
@@ -23,17 +29,38 @@ class APIController extends GetxController {
   var surveyListAllData = <SurveyModel>[].obs;
   var questionDetailedListAllData = <QuestionDetailedModel>[].obs;
 
+  var visibleRequired = false.obs;
+
   var selectedOption = 0.obs;
+  List<int> selectedOptions = [];
+  var selectedOptionName = ''.obs;
+  List<String> selectedOptionNames = [];
+  var selectedOptionQuestionID = ''.obs;
+  Set<String> selectedOptionQuestionIDs = {};
 
   var indexQuestion = 0.obs;
+
+  PageController scrollController = PageController();
 
   int incrementIndex(int index, int listLength) {
     index++;
     if (index >= listLength) {
       index = 0;
+      collectData();
       Get.back();
     }
+
     return index;
+  }
+
+  String buttonStateText() {
+    if (questionDetailedListAllData
+            .value[indexQuestion.value].question_number! ==
+        questionDetailedListAllData.value.last.question_number!) {
+      return 'Finish';
+    } else {
+      return 'Next';
+    }
   }
 
   void removePreferences() async {
@@ -41,6 +68,60 @@ class APIController extends GetxController {
     preferences.remove('email');
     preferences.remove('password');
     await Get.offAllNamed(Routes.LOGIN);
+  }
+
+  Future<List<QuestionDetailedModel>> getQuestionListData() async {
+    return questionDetailedListAllData.value;
+  }
+
+  void collectData() async {
+    Map<String, dynamic> dataCollectedMap = {};
+    List<Map<String, dynamic>> answersListMap = [{}];
+
+    final surveyId = questionDetailedListAllData[indexQuestion.value].survey_id;
+
+    answersListMap = List.generate(
+      selectedOptionQuestionIDs.length,
+      (index) => {
+        "question_id": selectedOptionQuestionIDs.toList()[index],
+        "answer": selectedOptionNames[index]
+      },
+    );
+
+    dataCollectedMap = {'survey_id': surveyId, 'answers': answersListMap};
+
+    if (kDebugMode) {
+      print(dataCollectedMap);
+    }
+
+    late final Directory? documentDirectory;
+    if (Platform.isIOS) {
+      documentDirectory = await getDownloadsDirectory();
+    } else if (Platform.isAndroid) {
+      documentDirectory = Directory('/storage/emulated/0/Download');
+    }
+
+    String path = '${documentDirectory!.path}/result.txt';
+
+    var file = File(path);
+    final permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isDenied) {
+      await Permission.storage.request();
+
+      if (permissionStatus.isDenied) {
+        await openAppSettings();
+      }
+    } else if (permissionStatus.isPermanentlyDenied) {
+      await openAppSettings();
+    } else {
+      file.writeAsString(jsonEncode(dataCollectedMap));
+      Get.snackbar(
+          'File saved.', 'Result file saved on phone Downloads folder.');
+    }
+
+    if (kDebugMode) {
+      print(dataCollectedMap);
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -157,9 +238,5 @@ class APIController extends GetxController {
         Get.snackbar('Gagal', 'Terjadi kesalahan.');
       }
     }
-  }
-
-  Future<List<QuestionDetailedModel>> getQuestionListData() async {
-    return questionDetailedListAllData.value;
   }
 }
