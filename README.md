@@ -1,16 +1,22 @@
-# survey_app_synapsis
+Mobile Developer
+Internship Challenge
+PT Synapsis Sinergi Digital
 
-A new Flutter project.
+Creating survey-like app with Flutter and Getx State Management. 
 
-## Getting Started
+references :
 
-This project is a starting point for a Flutter application.
+https://dev.to/ahmaddarwesh/handling-http-requests-with-dio-and-refresh-tokens-in-flutter-4mif
 
-A few resources to get you started if this is your first Flutter project:
+https://stackoverflow.com/questions/73154687/dio-dart-flutter-get-and-set-cookie
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+https://alexdrenea.com/2019/07/14/simplify-bearer-token-auth-flow-in-postman/
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+https://willsthoughts.com/posts/programming/flutter-paginate-gridview/
+
+https://programmingwithswift.com/how-to-save-a-file-locally-with-flutter/
+
+https://stackoverflow.com/questions/50561737/getting-permission-to-the-external-storage-file-provider-plugin
+
+https://medium.com/@kamal.lakhani56/step-pagination-flutter-b13b2cbbc71d
+
